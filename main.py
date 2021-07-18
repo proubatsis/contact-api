@@ -45,16 +45,14 @@ async def startup():
         await FastAPILimiter.init(redis)
 
 
-def build_rate_limit(times, seconds):
-    def get_rate_limit():
-        if REDIS_URL:
-            yield RateLimiter(times=times, seconds=seconds)()
-        else:
-            yield None
-    return get_rate_limit
+def build_rate_limits(times, seconds):
+    if REDIS_URL:
+        return [Depends(RateLimiter(times=times, seconds=seconds))]
+    else:
+        return []
 
 
-@app.get("/ping", dependencies=[Depends(build_rate_limit(3, 60))])
+@app.get("/ping", dependencies=build_rate_limits(3, 60))
 def ping():
     return {}
 
