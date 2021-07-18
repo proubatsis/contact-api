@@ -1,11 +1,15 @@
+import aioredis
 from fastapi import BackgroundTasks, Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from fastapi_limiter import FastAPILimiter
+from fastapi_limiter.depends import RateLimiter
 
 from db import Base, SessionLocal, engine
 from models import SendMessageRequest, SendMessageRequestStatus
 from schemas import SendMessageRequestCreate, SendMessageRequestCreateResponse
 from services import DiscordService, MessengerService, MessageDeliveryFailedError
+from settings import REDIS_URL
 
 
 Base.metadata.create_all(bind=engine)
@@ -34,7 +38,21 @@ def get_messenger_service():
     yield DiscordService()
 
 
-@app.get("/ping")
+@app.on_event("startup")
+async def startup():
+    if REDIS_URL:
+        redis = await aioredis.create_redis_pool(REDIS_URL)
+        await FastAPILimiter.init(redis)
+
+
+def build_rate_limit(times, seconds):
+    def get_rate_limit():
+        if REDIS_URL:
+            yield RateLimiter(times=times, seconds=seconds)
+    return get_rate_limit
+
+
+@app.get("/ping", dependencies=[Depends(build_rate_limit(3, 60))])
 def ping():
     return {}
 
