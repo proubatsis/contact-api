@@ -48,7 +48,9 @@ async def startup():
 def build_rate_limit(times, seconds):
     def get_rate_limit():
         if REDIS_URL:
-            yield RateLimiter(times=times, seconds=seconds)
+            yield RateLimiter(times=times, seconds=seconds)()
+        else:
+            yield None
     return get_rate_limit
 
 
