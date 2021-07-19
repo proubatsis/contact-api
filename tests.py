@@ -55,6 +55,90 @@ class ApiTests(unittest.TestCase):
         )
         self.assertEqual(422, response.status_code)
 
+        # Name field empty
+        response = self.client.post(
+            "/message",
+            json={
+                "name": " ",
+                "email": "me@gmail.com",
+                "subject": "Hello",
+                "content": "This is an email!",
+            },
+        )
+        self.assertEqual(422, response.status_code)
+
+        # Email field empty
+        response = self.client.post(
+            "/message",
+            json={
+                "name": "Me",
+                "email": "",
+                "subject": "Hello",
+                "content": "This is an email!",
+            },
+        )
+        self.assertEqual(422, response.status_code)
+
+        # Subject empty
+        response = self.client.post(
+            "/message",
+            json={
+                "name": "Me",
+                "email": "me@gmail.com",
+                "subject": " ",
+                "content": "This is an email!",
+            },
+        )
+        self.assertEqual(422, response.status_code)
+
+        # Content empty
+        response = self.client.post(
+            "/message",
+            json={
+                "name": "Me",
+                "email": "me@gmail.com",
+                "subject": "Hello",
+                "content": "",
+            },
+        )
+        self.assertEqual(422, response.status_code)
+
+        # Name too long
+        response = self.client.post(
+            "/message",
+            json={
+                "name": "".join(["a" for _ in range(300)]),
+                "email": "me@gmail.com",
+                "subject": "Hello",
+                "content": "",
+            },
+        )
+        self.assertEqual(422, response.status_code)
+
+        # Name too long
+        response = self.client.post(
+            "/message",
+            json={
+                "name": "Me",
+                "email": "me@gmail.com",
+                "subject": "".join(["a" for _ in range(300)]),
+                "content": "",
+            },
+        )
+        self.assertEqual(422, response.status_code)
+
+        # Content too long
+        response = self.client.post(
+            "/message",
+            json={
+                "name": "Me",
+                "email": "me@gmail.com",
+                "subject": "Hello",
+                "content": "".join(["a" for _ in range(30000)]),
+            },
+        )
+        self.assertEqual(422, response.status_code)
+
         # Should work
         response = self.client.post(
             "/message",

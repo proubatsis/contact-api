@@ -1,14 +1,14 @@
 import enum
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, constr
 
 
 class SendMessageRequestCreate(BaseModel):
-    name: str
+    name: constr(strip_whitespace=True, min_length=1, max_length=128)
     email: EmailStr
-    subject: str
-    content: str
+    subject: constr(strip_whitespace=True, min_length=1, max_length=255)
+    content: constr(min_length=1, max_length=10000)
 
 
 class SendMessageRequestCreateResponse(BaseModel):
