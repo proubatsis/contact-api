@@ -45,19 +45,29 @@ async def startup():
         await FastAPILimiter.init(redis)
 
 
-def build_rate_limits(times, seconds):
+def build_rate_limits(rates):
     if REDIS_URL:
-        return [Depends(RateLimiter(times=times, seconds=seconds))]
+        return [Depends(RateLimiter(**rate)) for rate in rates]
     else:
         return []
 
 
-@app.get("/ping", dependencies=build_rate_limits(3, 60))
+@app.get("/ping", dependencies=build_rate_limits([
+    {"times": 30, "seconds": 60},
+]))
 def ping():
     return {}
 
 
-@app.post("/message", response_model=SendMessageRequestCreateResponse)
+@app.post(
+    "/message",
+    response_model=SendMessageRequestCreateResponse,
+    dependencies=build_rate_limits([
+        {"times": 4, "seconds": 60},
+        {"times": 8, "minutes": 60},
+        {"times": 16, "hours": 24},
+    ])
+)
 def create_message(
     request: Request,
     message_request: SendMessageRequestCreate,
