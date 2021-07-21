@@ -166,6 +166,23 @@ class ApiTests(unittest.TestCase):
             response.json(),
         )
 
+        # Should prefer origin header over host header
+        response = self.client.post(
+            "/message",
+            headers={
+                "Origin": "xyz.net",
+            },
+            json={
+                "name": "Me",
+                "email": "me@gmail.com",
+                "subject": "Hello",
+                "content": "This is an email!",
+            },
+        )
+        send_request = self.db.query(SendMessageRequest).filter(SendMessageRequest.domain == "xyz.net").first()
+        self.assertIsNotNone(send_request)
+        self.assertEqual("xyz.net", send_request.domain)
+
 
 if __name__ == "__main__":
     unittest.main()

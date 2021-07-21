@@ -80,7 +80,7 @@ def create_message(
         email=message_request.email,
         subject=message_request.subject,
         content=message_request.content,
-        domain=request.headers["host"],
+        domain=request.headers.get("origin", request.headers["host"]),
         ip_address=request.client.host,
     )
     db.add(send_request)
