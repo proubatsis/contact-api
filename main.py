@@ -20,6 +20,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://panagiotis.ca",
+        "https://panagiotis.ca",
         "http://localhost:8000",
     ],
     allow_methods=["*"],
